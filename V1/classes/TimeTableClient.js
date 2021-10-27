@@ -12,7 +12,7 @@ const get = 'get'
 /**
  * - The client for making timetable requests from skola24
  */
-class Client{
+class TimeTableClient{
     /**
      * @type String
      */
@@ -71,14 +71,13 @@ class Client{
                 headers: this.gHeaders(data.length)
             })
 
-            this.units = unitReq.data.data.getTimetableViewerUnitsResponse;
-
+            let units = unitReq.data.data.getTimetableViewerUnitsResponse;
 
             if(defaultSchoolName){
                 for(var unit in this.units){
+                    this.units[unit] = new Unit(units[unit])
                     if(unit.unitId == defaultSchoolName){
                         this.defaultSchool = unit;
-                        break;
                     }
                 }
                 if(!this.defaultSchool){
@@ -201,4 +200,4 @@ class Client{
     }
 }
 
-module.exports = Client;
+module.exports = TimeTableClient;

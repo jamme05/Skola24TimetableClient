@@ -1,41 +1,33 @@
-class Unit{
-    classes;
-    hostName;
+const axios = require('axios');
+const Class = require('./Class');
 
-    id;
-    groupGuid;
-    groupName;
-    absenceMessageNotDeliveredCount;
-    isResponsible;
-    isClass;
-    isAdmin;
-    isPrincipal;
-    isMentor;
-    isPreschoolGroup;
-    teachers;
-    selectableBy;
-    substituteTeacherGuid;
+const apipath = 'https://web.skola24.se/api/'
+const selectionpath = 'get/timetable/selection'
+
+class Unit{
+    classes = [];
+
+    hostName;
+    unitGuid;
+    unitId;
+    allowCalendarExport;
+    private;
+    staff;
+    anonymous;
 
 
     constructor(unitData, hostName){
-        this.id = unitData.id;
-        this.groupGuid = unitData.groupGuid;
-        this.groupName = unitData.groupName;
-        this.absenceMessageNotDeliveredCount = unitData.absenceMessageNotDeliveredCount;
-        this.isResponsible = unitData.isResponsible;
-        this.isClass = unitData.isClass;
-        this.isAdmin = unitData.isAdmin;
-        this.isPrincipal = unitData.isPrincipal;
-        this.isMentor = unitData.isMentor;
-        this.isPreschoolGroup = unitData.isPreschoolGroup;
-        this.teachers = unitData.teachers;
-        this.selectableBy = unitData.selectableBy;
-        this.substituteTeacherGuid = unitData.substituteTeacherGuidM;
+        this.unitGuid = unitData.unitGuid;
+        this.unitId = unitData.unitId;
+        this.allowCalendarExport = unitData.allowCalendarExport;
+        this.private = unitData.private;
+        this.staff = unitData.staff;
+        this.anonymous = unitData.anonymous;
 
         this.hostName = hostName;
 
         (async () => {
-            var data = `{"hostName":"${hostName}","unitGuid":"${this.groupGuid}","filters":{"class":true,"course":false,"group":false,"period":false,"room":false,"student":false,"subject":false,"teacher":false}}`;
+            var data = `{"hostName":"${hostName}","unitGuid":"${this.unitId}","filters":{"class":true,"course":false,"group":false,"period":false,"room":false,"student":false,"subject":false,"teacher":false}}`;
 
             var res = await axios({
                 method:post,
@@ -43,6 +35,10 @@ class Unit{
                 data,
                 headers:this.gHeaders(data.length)
             });
+
+            for(let i in classes){
+                this.classes = Class(classes[i])
+            }
 
             this.classes = res.data.data.classes;
         })
@@ -63,7 +59,7 @@ class Unit{
 
     reloadClasses(par1,par2){
         var callback;
-        
+
         if(typeof par1 == 'function') callback = par1;
         else callback = par2;
         var data = `{"hostName":"${hostName||this.defaultHostName}","unitGuid":"${unitId}","filters":{"class":true,"course":false,"group":false,"period":false,"room":false,"student":false,"subject":false,"teacher":false}}`
@@ -75,6 +71,31 @@ class Unit{
             headers:this.gHeaders(data.length)
         })
         .then(res => {if(typeof callback == 'function') callback(res.data.data.classes);})
+    }
+
+    /**
+     * 
+     * @param {String} name - The name of the class.
+     * @returns {Class|null} The class from the name, returns null if not found.
+     */
+    getClassByName(name){
+        for(var _class of this.classes){
+            if(_class.groupName == name){
+                return _class;
+            }
+        }
+        return null;
+        //
+    }
+
+    gHeaders(len){
+        return {
+            'Content-Type': 'application/json',
+            'Content-Length': len,
+            'Cookie': this.cookie, // The cookie
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-scope': this.scope // The scope
+        }
     }
 }
 
