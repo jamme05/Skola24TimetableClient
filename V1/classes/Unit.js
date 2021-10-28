@@ -5,6 +5,9 @@ const apipath = 'https://web.skola24.se/api/'
 const selectionpath = 'get/timetable/selection'
 
 class Unit{
+    #cookie;
+    #scope;
+
     classes = [];
 
     hostName;
@@ -24,24 +27,37 @@ class Unit{
         this.staff = unitData.staff;
         this.anonymous = unitData.anonymous;
 
+        this.#cookie = unitData.cookie;
+        this.#scope = unitData.scope;
+
         this.hostName = hostName;
+    }
 
-        (async () => {
-            var data = `{"hostName":"${hostName}","unitGuid":"${this.unitId}","filters":{"class":true,"course":false,"group":false,"period":false,"room":false,"student":false,"subject":false,"teacher":false}}`;
 
-            var res = await axios({
-                method:post,
-                url:apipath+selectionpath,
-                data,
-                headers:this.gHeaders(data.length)
-            });
+    async loadClasses(){
+        var hostName = this.hostName;
 
-            for(let i in classes){
-                this.classes = Class(classes[i])
-            }
+        var data = `{"hostName":"${hostName}","unitGuid":"${this.unitGuid}","filters":{"class":true,"course":false,"group":false,"period":false,"room":false,"student":false,"subject":false,"teacher":false}}`;
 
-            this.classes = res.data.data.classes;
-        })
+        var res = await axios({
+            method:'post',
+            url:apipath+selectionpath,
+            data,
+            headers:this.gHeaders(data.length)
+        });
+        
+        //console.log(JSON.stringify(res.data.exception))
+        var classes = res.data.data.classes;
+        
+
+        for(let i in classes){
+            let _class = classes[i];
+            _class.cookie = this.#cookie;
+            _class.scope = this.#scope;
+            _class.unitGuid = this.unitGuid;
+
+            this.classes[i] = new Class(_class, this.hostName);
+        }
     }
 
     async reloadClasses(hostName){
@@ -92,9 +108,9 @@ class Unit{
         return {
             'Content-Type': 'application/json',
             'Content-Length': len,
-            'Cookie': this.cookie, // The cookie
+            'Cookie': this.#cookie, // The cookie
             'X-Requested-With': 'XMLHttpRequest',
-            'X-scope': this.scope // The scope
+            'X-scope': this.#scope // The scope
         }
     }
 }

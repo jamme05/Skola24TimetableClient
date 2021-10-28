@@ -1,4 +1,4 @@
-const { createCanvas, NodeCanvasRenderingContext2D } = require('canvas')
+const { NodeCanvasRenderingContext2D, Canvas } = require('canvas')
 
 class Timetable{ //scheduleDay > 0 = skoldag annars hela schemat.
     width;
@@ -15,7 +15,10 @@ class Timetable{ //scheduleDay > 0 = skoldag annars hela schemat.
     lineList = [];
     textList = [];
 
-    constructor(timetableData){
+    constructor(timetableData, width, height){
+        this.width = parseInt(width);
+        this.height = parseInt(height);
+
         this.lessons = timetableData.lessonInfo;
         this.boxList = timetableData.boxList;
         this.lineList = timetableData.lineList;
@@ -25,16 +28,15 @@ class Timetable{ //scheduleDay > 0 = skoldag annars hela schemat.
     Render(){
         const w=this.width,h=this.height;
 
-        const canvas = createCanvas(w, h);
+        const canvas = new Canvas(w, h);
         const context = canvas.getContext('2d');
 
         context.fillStyle = '#fff'
         context.fillRect(0,0, w, h)
 
-        var data = loadjson(__dirname+'/TE21C.json').data,
-            boxList = data.boxList,
-            lineList = data.lineList,
-            textList = data.textList;
+        var boxList = this.boxList,
+            lineList = this.lineList,
+            textList = this.textList;
 
 
         for(var box of boxList){
