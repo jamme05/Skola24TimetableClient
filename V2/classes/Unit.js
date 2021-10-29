@@ -15,9 +15,6 @@ class Unit{
 
     hostName;
     unitGuid;
-    /**
-     * @type {String}
-     */
     unitId;
     allowCalendarExport;
     private;

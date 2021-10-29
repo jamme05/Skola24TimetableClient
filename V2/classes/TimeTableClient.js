@@ -244,14 +244,9 @@ class TimeTableClient{
         return res.data.data.key;
     }
 
-    /**
-     * 
-     * @param {String} name - The name of the unit.
-     * @returns {Unit|null} Returns the unit or returns null if unit not found.
-     */
     getUnitByName(name){
         for(var unit of this.units){
-            if(unit.unitId.toLowerCase() == name.toLowerCase()){
+            if(unit.groupName == name){
                 return unit;
             }
         }
